@@ -1544,12 +1544,12 @@ namespace Oxide.Plugins
                 PrintMsgL(player, err);
                 return;
             }
-            err = CheckTargetLocation(target, target.transform.position, configData.TPR.UsableIntoBuildingBlocked, configData.TPR.CupOwnerAllowOnBuildingBlocked);
-            if (err != null)
-            {
-                PrintMsgL(player, err);
-                return;
-            }
+            //err = CheckTargetLocation(target, target.transform.position, configData.TPR.UsableIntoBuildingBlocked, configData.TPR.CupOwnerAllowOnBuildingBlocked);
+            //if (err != null)
+            //{
+            //    PrintMsgL(player, err);
+            //    return;
+            //}
             var timestamp = Facepunch.Math.Epoch.Current;
             var currentDate = DateTime.Now.ToString("d");
             TeleportData tprData;
@@ -1651,12 +1651,12 @@ namespace Oxide.Plugins
                 return;
             }
             var originPlayer = PlayersRequests[player.userID];
-            err = CheckTargetLocation(originPlayer, player.transform.position, configData.TPR.UsableIntoBuildingBlocked, configData.TPR.CupOwnerAllowOnBuildingBlocked);
-            if (err != null)
-            {
-                SendReply(player, err);
-                return;
-            }
+            //err = CheckTargetLocation(originPlayer, player.transform.position, configData.TPR.UsableIntoBuildingBlocked, configData.TPR.CupOwnerAllowOnBuildingBlocked);
+            //if (err != null)
+            //{
+            //    SendReply(player, err);
+            //    return;
+            //}
             if (configData.TPR.BlockTPAOnCeiling)
             {
                 var position = GetGround(player.transform.position);
@@ -1692,15 +1692,15 @@ namespace Oxide.Plugins
                         TeleportTimers.Remove(originPlayer.userID);
                         return;
                     }
-                    err = CheckTargetLocation(originPlayer, player.transform.position, configData.TPR.UsableIntoBuildingBlocked, configData.TPR.CupOwnerAllowOnBuildingBlocked);
-                    if (err != null)
-                    {
-                        SendReply(player, err);
-                        PrintMsgL(originPlayer, "Interrupted");
-                        SendReply(originPlayer, err);
-                        TeleportTimers.Remove(originPlayer.userID);
-                        return;
-                    }
+                    //err = CheckTargetLocation(originPlayer, player.transform.position, configData.TPR.UsableIntoBuildingBlocked, configData.TPR.CupOwnerAllowOnBuildingBlocked);
+                    //if (err != null)
+                    //{
+                    //    SendReply(player, err);
+                    //    PrintMsgL(originPlayer, "Interrupted");
+                    //    SendReply(originPlayer, err);
+                    //    TeleportTimers.Remove(originPlayer.userID);
+                    //    return;
+                    //}
                     err = CanPlayerTeleport(originPlayer) ?? CanPlayerTeleport(player);
                     if (err != null)
                     {
@@ -2318,27 +2318,28 @@ namespace Oxide.Plugins
 
         private string CheckTargetLocation(BasePlayer player, Vector3 targetLocation, bool build, bool owner)
         {
-            var colliders = Pool.GetList<Collider>();
-            Vis.Colliders(targetLocation, 0.1f, colliders, triggerLayer);
-            var cups = false;
-            foreach (var collider in colliders)
+            var blocks = GetFoundation(targetLocation);
+            if (blocks == null || blocks.Count < 1)
+                return null;
+            var cup = blocks[0].GetBuildingPrivilege();
+            if (cup == null)
             {
-                var cup = collider.GetComponentInParent<BuildingPrivlidge>();
-                if (cup == null) continue;
-                cups = true;
-                if (owner && player.userID == cup.OwnerID)
-                {
-                    Pool.FreeList(ref colliders);
-                    return null;
-                }
-                if (cup.IsAuthed(player))
-                {
-                    Pool.FreeList(ref colliders);
-                    return null;
-                }
+                Pool.FreeList( ref blocks );
+                return null;
             }
-            Pool.FreeList(ref colliders);
-            return cups && !build ? "TPTargetBuildingBlocked" : null;
+            if (owner && player.userID == cup.OwnerID)
+            {
+                Pool.FreeList(ref blocks);
+                return null;
+            }
+            if (cup.IsAuthed(player))
+            {
+                Pool.FreeList(ref blocks);
+                return null;
+            }
+
+            Pool.FreeList(ref blocks);
+            return !build ? "TPTargetBuildingBlocked" : null;
         }
 
         private string CheckInsideBlock(Vector3 targetLocation)
