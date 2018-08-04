@@ -296,6 +296,7 @@ namespace Oxide.Plugins
                 {"HomesListWiped", "You have wiped all the saved home locations!"},
                 {"HomeTPBuildingBlocked", "You can't set your home if you are not allowed to build in this zone!"},
                 {"HomeTPSwimming", "You can't set your home while swimming!"},
+                {"HomeTPMounted", "You can't teleport while sitting!"},
                 {"HomeTPCrafting", "You can't set your home while crafting!"},
                 {"Request", "You've requested a teleport to {0}!"},
                 {"RequestTarget", "{0} requested to be teleported to you! Use '/tpa' to accept!"},
@@ -326,6 +327,7 @@ namespace Oxide.Plugins
                 {"TPTargetBuildingBlocked", "You can't teleport in a building blocked zone!"},
                 {"TPTargetInsideBlock", "You can't teleport into a foundation!"},
                 {"TPSwimming", "You can't teleport while swimming!"},
+                {"TPMounted", "You can't teleport while sitting!"},
                 {"TPCrafting", "You can't teleport while crafting!"},
                 {"TPBlockedItem", "You can't teleport while carrying: {0}!"},
                 {"TownTP", "You teleported to town!"},
@@ -2311,6 +2313,8 @@ namespace Oxide.Plugins
                 return "TPBuildingBlocked";
             if (player.IsSwimming())
                 return "TPSwimming";
+            if (player.GetMounted() != null)
+                return "TPMounted";
             if (!craft && player.inventory.crafting.queue.Count > 0)
                 return "TPCrafting";
             return null;
